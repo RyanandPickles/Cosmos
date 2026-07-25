@@ -1,4 +1,4 @@
 Stream
-Video  ----> 30fps -------> lossy Compression ------> transfer the first photo,  --------------------------------------------> bytes ------> bits --------------------> pam ----->(transmitter black box (reciever)--> pam --> bits -------------------------> bytes --> picture
+Video  ----> 30fps -------> lossy Compression ------> transfer the first photo,  --------------------------------------------> bytes ------> bits --------------------> pam ----->(transmitter) black box (reciever)--> pam --> bits -------------------------> bytes --> picture
 Live Stream                                            and then the other photo is based on the                                              *encode+compress method*              "+noise"                                    *decode+decompress method*                *output
                                                         first photo by transferring the change in neighboring photos only
