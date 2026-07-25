@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import random
+import lz4.frame
+
 
 def get_random_integers(n, m, seed):
     """
@@ -61,3 +63,21 @@ def unpack_jpg_bits(image_path):
             return bits
     except FileNotFoundError:
         return "Error: File not found."
+
+#compression (lz4) helper functions
+
+def bytes_to_lz4_bits(data_bytes):
+    compressed_bytes = lz4.frame.compress(data_bytes)
+
+    bits = np.unpackbits(np.frombuffer(compressed_bytes, dtype=np.uint8))
+    return bits, len(compressed_bytes)
+
+
+def lz4_bits_to_bytes(bits):
+    try:
+        compressed_bytes = np.packbits(bits).tobytes()
+        decompressed_bytes = lz4.frame.decompress(compressed_bytes)
+        return decompressed_bytes
+    except Exception as e:
+        print(f"LZ4 Decompression error (packet dropped): {e}")
+        return None
