@@ -100,7 +100,7 @@ Returns:
 
 
 
-##############
+##################################################################################################################################
 
 
 
@@ -109,9 +109,39 @@ Returns:
     parity = (blocks.astype(np.int64) @ A.T.astype(np.int64)) % 2
     #back down to int8, axis=1 --> horizontal merge
     codewords = np.concatenate((blocks, parity.astype(np.uint8)), axis=1)
-
+    #automatically flattens codewords into a 1-row array and turns it into a bitstring
     encoded_bit_string= uint8_to_bitstring(codewords.reshape(-1))
     return encoded_bit_string, original_length
+def ldpc_decode(blocks, H, max_iterations=10, H_sparse=None, Ht_sparse=None):
+    """
+Description:
+    Corrects all of the n-bit blocks recieved at once
+Parameters:
+    blocks: recieved noisy codewords
+    H: parity check matrix
+    H_sparse: spicy.sparse CSR version of H, results in much smaller memory being used as arithmetic is ran on only positive 1's
+    Ht_sparse: precomputed CSR version of transpose of H
+Returns:
+    corrected: best guess at codewords
+    success: boolean array to see if all parity checks are passed
+    """
+    if H_sparse is None:
+        H_sparse = sparse.csr_matrix(H.astype(np.float32))
+    if Ht_sparse is None:
+        Ht_sparse = H_sparse.T.tocsr()
+    
 
-
-def ldpc_decode_block(recieved_bits, H, max_iterations=10, H_sparse=None, Ht_sparse=None):
+def ldpc_decode_block(recieved_bits, H, max_iterations=10):
+    """
+Description:
+    Decodes one individual block
+Parameters:
+    recieved_bits: 1D array of n recieved bits w/ noise
+    H: parity check matrix
+    max_iterations: max number of iterations to fix otherwise ignore
+Returns:
+    corrected: 1D array of best guess at true codeword, not necessarily 100% correct
+    success: is a boolean check of if all parity checks are passed
+    """
+    blocks = np.asarray(recieved_bits, dtype=np.uint8).reshape(1,-1)
+    corrected, success = ldpc_decode_blocks
