@@ -14,4 +14,4 @@ Returns:
     """
 
     A = np.zeros((m,k), dtype = np.uint8)
-
+#
