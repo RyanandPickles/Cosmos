@@ -35,10 +35,10 @@ Returns:
     n = k + m
     return A, H, n
 
-def ldpc_encoding_mechanism(message_bits, A):
+def ldpc_encode_block(message_bits, A):
     """
 Description:
-    k-bit message --> n-bit codeword
+    ONE INDIVIDUAL BLOCK - k-bit message --> n-bit codeword
 Parameters:
     k-bit message
     A: (m x k) binary numpy array, is a sparse random binary matrix 
@@ -70,5 +70,9 @@ Description:
 Parameters:
     bits in uint8
 Returns:
-    
+    bit string
     """
+    # makes to uint 8, +48 is ord'0', tobytes translates ascii to string, ascii removes b infront of b"string" then 
+    return (bits.astype(np.uint8)+ord('0')).tobytes().decode('ascii')
+
+def ldpc_encode():
