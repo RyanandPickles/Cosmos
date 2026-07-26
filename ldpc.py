@@ -50,7 +50,7 @@ Returns:
     #converts message bits into an array using 8 bit unsigned integer types
     message_bits = np.asarray(message_bits, dtype=np.uint8)
     parity_bits = (A @ message_bits) % 2
-    return np.concatenate((message_bits), parity_bits)
+    return np.concatenate((message_bits, parity_bits))
 
 def bitstring_to_uint8(bit_string):
     """
@@ -136,6 +136,51 @@ Returns:
     #looks at which blocks still need fixing
     active = np.ones(num_blocks, dtype=bool)
 
+
+###############################################downdowndowndowndowndowndown
+
+
+
+
+
+    for i in range (max_iterations):
+        # nothing left to do so stop early
+        if not active.any():
+            break
+
+        syndrome= (C[active] @ Ht_sparse) % 2
+        row_done = ~np.asarray(syndrome.any(axis=1)).ravel()
+
+        active_index = np.where(active)[0]
+        active[active_index[row_done]] = False
+        still_going = ~row_done
+
+        if not still_going.any():
+            continue
+
+        syndrome = syndrome[still_going]
+        rows = active_index[still_going]
+
+        unsatisfied_counts = np.asarray(syndrome @ H_sparse)  # (num_still_going, n)
+        max_count = unsatisfied_counts.max(axis=1)
+
+        stuck = max_count == 0
+        if stuck.any():
+            active[rows[stuck]] = False
+
+        moving = ~stuck
+        if moving.any():
+            #1 wherever a bit is tied for max blame, 0 elsewhere
+            flip_mask = (unsatisfied_counts[moving] == max_count[moving][:, None]).astype(np.float32)
+            #flipping a bit = adding 1 mod 2
+            C[rows[moving]] = (C[rows[moving]] + flip_mask) % 2
+        
+    final_syndrome = (C @ Ht_sparse) % 2
+    success = ~np.asarray(final_syndrome.any(axis=1)).ravel()
+    return C.astype(np.uint8), success
+
+###################################^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 def ldpc_decode_block(recieved_bits, H, max_iterations=10):
     """
 Description:
@@ -149,4 +194,36 @@ Returns:
     success: is a boolean check of if all parity checks are passed
     """
     blocks = np.asarray(recieved_bits, dtype=np.uint8).reshape(1,-1)
-    corrected, success = ldpc_decode_blocks
+
+
+ ########downdown  down   down  down  down  down  down  down  
+    corrected, success = ldpc_decode(blocks, H, max_iterations)
+    return corrected[0], bool(success[0])
+
+def ldpc_decode_bitstring(encoded_bit_string, H, k, n, original_length, max_iterations=10, H_sparse = None, Ht_sparse = None):
+    """
+Description:
+    Decodes the full bit string
+Parameters:
+    encoded_bit_string: full bit string
+    H: parity check matrix
+    k: message bits per block
+    n: code word length
+    original_length: used for undoing padding
+    H_sparse, Ht_sparse: are computed sparse versions
+Returns:
+    decoded_bit_string: recovered message
+    num_blocks failed: pretty obv twin lmao
+    """
+    bits = bitstring_to_uint8(encoded_bit_string)
+    blocks = bits.reshape(-1,n)
+
+    corrected, success = ldpc_decode(blocks, H, max_iterations, H_sparse=H_sparse, Ht_sparse=Ht_sparse)
+
+    num_blocks_failed = int((~success).sum())
+
+    decoded_bits = corrected[:, :k].reshape(-1)
+    decoded_bit_string = uint8_to_bitstring(decoded_bits)
+
+    decoded_bit_string = decoded_bit_string[:original_length]
+    return decoded_bit_string, num_blocks_failed
