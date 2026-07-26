@@ -1,7 +1,9 @@
 # general format for function definition: description, parameters, and returns to stay organized
 import numpy as np
+# ignores the massive amoutn of 0's in the matrix to speed up
+from scipy import sparse
 
-def gen_ldpc_matricies(k,m,column_weight=3,seed=None)
+def gen_ldpc_matricies(k,m,column_weight=3,seed=None):
     """
 Description:
     Generates the parity check matrix, and other information along with it
@@ -48,8 +50,7 @@ Returns:
     #converts message bits into an array using 8 bit unsigned integer types
     message_bits = np.asarray(message_bits, dtype=np.uint8)
     parity_bits = (A @ message_bits) % 2
-    codeword = np.concatenate((message_bits), parity_bits)
-    return codeword
+    return np.concatenate((message_bits), parity_bits)
 
 def bitstring_to_uint8(bit_string):
     """
@@ -109,8 +110,8 @@ Returns:
     #back down to int8, axis=1 --> horizontal merge
     codewords = np.concatenate((blocks, parity.astype(np.uint8)), axis=1)
 
-    encoded_bit_string= np.concatenate((blocks, parity.astype(np.uint8)), axis = 1)
+    encoded_bit_string= uint8_to_bitstring(codewords.reshape(-1))
     return encoded_bit_string, original_length
 
 
-def ldpc_decode_block(recieved_bits, H, max_iterations=10):
+def ldpc_decode_block(recieved_bits, H, max_iterations=10, H_sparse=None, Ht_sparse=None):
