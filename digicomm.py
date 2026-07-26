@@ -644,8 +644,36 @@ def bits_to_qam_symbols(bits, M):
 
     constellation = get_qam_constellation(M,Es=1)
     bit_groups = bits.reshape(-1, k)
-    decimal_values = int(np.array([int("".join(map(str, group)), 2) for group in bit_groups]))
+    weights = (1 << np.arange(k - 1, -1, -1)).astype(np.int64)
+    decimal_values = bit_groups.astype(np.int64) @ weights
     return constellation[decimal_values], remainder
+
+def qam_symbols_to_bits(symbols, M):
+    """
+    Inverse of bits_to_qam_symbols: snap each received (noisy) symbol to
+    its nearest constellation point, then unpack that point's index back
+    into k = log2(M) bits, MSB-first (matching bits_to_qam_symbols).
+
+    Parameters:
+    symbols (np.ndarray): Received complex symbols (post channel-equalization).
+    M (int): Modulation order (must be a perfect square, matching the TX side).
+
+    Returns:
+    np.ndarray: Flattened np.uint8 array of 0/1 bits, length = len(symbols) * log2(M).
+    """
+    k = int(np.log2(M))
+    symbols = np.asarray(symbols).flatten()
+    constellation = get_qam_constellation(M, Es=1)
+
+    #vectorized nearest-neighbor search: distance from every symbol to
+    #every constellation point, then argmin per symbol (no Python loop)
+    diffs = np.abs(symbols[:, None] - constellation[None, :])
+    decimal_values = np.argmin(diffs, axis=1)
+
+    #unpack each index back into k MSB-first bits
+    shifts = np.arange(k - 1, -1, -1)
+    bits = ((decimal_values[:, None] >> shifts) & 1).astype(np.uint8)
+    return bits.reshape(-1)
 
 def downsample_signal(x, M):
     """
