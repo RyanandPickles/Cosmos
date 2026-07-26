@@ -95,4 +95,22 @@ Returns:
     bits = bitstring_to_uint8(padded_string)
     #calculate number of rows needed - e.g. num/k rows
     blocks = bits.reshape(-1,k)
-    
+
+
+
+
+##############
+
+
+
+
+    #convert to int64 to avoid overflow
+    parity = (blocks.astype(np.int64) @ A.T.astype(np.int64)) % 2
+    #back down to int8, axis=1 --> horizontal merge
+    codewords = np.concatenate((blocks, parity.astype(np.uint8)), axis=1)
+
+    encoded_bit_string= np.concatenate((blocks, parity.astype(np.uint8)), axis = 1)
+    return encoded_bit_string, original_length
+
+
+def ldpc_decode_block(recieved_bits, H, max_iterations=10):
