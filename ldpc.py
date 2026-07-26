@@ -260,3 +260,5 @@ Returns:
     flips = rng.random(bits.shape) < p
     bits[flips] = 1 - bits[flips]
     return ''.join(str(b) for b in bits)
+
+###^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
