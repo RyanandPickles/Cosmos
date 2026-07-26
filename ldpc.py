@@ -60,3 +60,15 @@ Parameters:
 Returns:
     np.uint8 array
     """
+    #Used for storage purposes, ascii takes up one byte with np, otherwise takes more
+    return np.frombuffer(bit_string.encode('ascii'), dtype=np.uint8) - ord('0')
+
+def uint8_to_bitstring(bits):
+    """
+Description:
+    pretty obvious twin part 2
+Parameters:
+    bits in uint8
+Returns:
+    
+    """
