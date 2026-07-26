@@ -97,10 +97,23 @@ def ldpc_encode_block(msg_bits, A):
     return codeword
 
 
+def _bitstring_to_uint8(bit_string):
+    """Vectorized '0'/'1' str -> np.uint8 array (no per-char Python loop)."""
+    return np.frombuffer(bit_string.encode('ascii'), dtype=np.uint8) - ord('0')
+
+
+def _uint8_to_bitstring(bits):
+    """Vectorized np.uint8 (0/1) array -> '0'/'1' str (no per-element join)."""
+    return (bits.astype(np.uint8) + ord('0')).tobytes().decode('ascii')
+
+
 def ldpc_encode(bit_string, A, k):
     """
     Encode an arbitrary-length bitstring (e.g. from helpers.jpg_to_bits)
-    by splitting it into k-bit blocks and LDPC-encoding each one.
+    by splitting it into k-bit blocks and LDPC-encoding ALL blocks at
+    once via a single batched matmul, instead of a Python loop over
+    ldpc_encode_block() per block. Same math, same output -- just
+    reshaped so numpy does the work in one call instead of thousands.
 
     bit_string : str of '0'/'1' characters, any length
     A          : (m x k) matrix from generate_ldpc_matrices()
@@ -119,13 +132,15 @@ def ldpc_encode(bit_string, A, k):
     pad_len = (-original_length) % k
     padded = bit_string + '0' * pad_len
 
-    bits = np.array([int(b) for b in padded], dtype=np.uint8)
-    blocks = bits.reshape(-1, k)
+    bits = _bitstring_to_uint8(padded)
+    blocks = bits.reshape(-1, k)  # (num_blocks, k)
 
-    encoded_blocks = [ldpc_encode_block(block, A) for block in blocks]
-    encoded_bits = np.concatenate(encoded_blocks)
+    # parity[i] = (A @ blocks[i]) % 2 for every block i at once:
+    # blocks (num_blocks, k) @ A.T (k, m) -> (num_blocks, m)
+    parity = (blocks.astype(np.int64) @ A.T.astype(np.int64)) % 2
+    codewords = np.concatenate((blocks, parity.astype(np.uint8)), axis=1)  # (num_blocks, n)
 
-    encoded_bit_string = ''.join(str(b) for b in encoded_bits)
+    encoded_bit_string = _uint8_to_bitstring(codewords.reshape(-1))
     return encoded_bit_string, original_length
 
 
@@ -171,9 +186,65 @@ def ldpc_decode_block(received_bits, H, max_iterations=50):
     return c, not syndrome.any()
 
 
+def ldpc_decode_blocks_batched(blocks, H, max_iterations=50):
+    """
+    Same bit-flipping algorithm as ldpc_decode_block(), but runs ALL
+    blocks through the iteration loop together as one (num_blocks, n)
+    matrix, so each of the (up to) max_iterations rounds is a couple of
+    matmuls over every block at once instead of a Python-level loop
+    doing one block at a time. Blocks are decoded independently of each
+    other (H is shared, but nothing crosses between rows), so batching
+    like this gives bit-for-bit identical results to calling
+    ldpc_decode_block() on each row separately -- just much faster.
+
+    blocks : (num_blocks, n) uint8 array of received bits
+    H      : (m, n) parity-check matrix
+    Returns: (corrected (num_blocks, n) uint8 array, success (num_blocks,) bool array)
+    """
+    C = blocks.astype(np.int64).copy()
+    Ht = H.T.astype(np.int64)  # (n, m), reused every iteration
+    num_blocks = C.shape[0]
+    active = np.ones(num_blocks, dtype=bool)  # rows not yet converged/stuck
+
+    for _ in range(max_iterations):
+        if not active.any():
+            break
+
+        syndrome = (C[active] @ Ht) % 2  # (num_active, m)
+        row_done = ~syndrome.any(axis=1)
+
+        # Mark newly-converged rows as inactive; keep working on the rest.
+        active_idx = np.where(active)[0]
+        active[active_idx[row_done]] = False
+        still_going = ~row_done
+        if not still_going.any():
+            continue
+
+        syndrome = syndrome[still_going]
+        rows = active_idx[still_going]
+
+        unsatisfied_counts = syndrome @ H  # (num_still_going, n)
+        max_count = unsatisfied_counts.max(axis=1)
+
+        stuck = max_count == 0
+        if stuck.any():
+            active[rows[stuck]] = False  # can't improve further -> stop, will report as failed below
+
+        moving = ~stuck
+        if moving.any():
+            flip_mask = unsatisfied_counts[moving] == max_count[moving][:, None]
+            C[rows[moving]] ^= flip_mask.astype(np.int64)
+
+    final_syndrome = (C @ Ht) % 2
+    success = ~final_syndrome.any(axis=1)
+    return C.astype(np.uint8), success
+
+
 def ldpc_decode(encoded_bit_string, H, k, n, original_length, max_iterations=50):
     """
-    Decode a full encoded bitstream produced by ldpc_encode().
+    Decode a full encoded bitstream produced by ldpc_encode(), batching
+    all blocks through ldpc_decode_blocks_batched() instead of looping
+    over ldpc_decode_block() one block at a time.
 
     encoded_bit_string : str of '0'/'1', possibly containing bit errors
     H                   : (m x n) parity-check matrix (must match the H
@@ -181,7 +252,7 @@ def ldpc_decode(encoded_bit_string, H, k, n, original_length, max_iterations=50)
     k, n                : block sizes used at encode time
     original_length     : the original_length returned by ldpc_encode(),
                           used to trim off padding at the end
-    max_iterations      : passed through to ldpc_decode_block()
+    max_iterations      : passed through to the decoder
 
     Returns
     -------
@@ -190,20 +261,14 @@ def ldpc_decode(encoded_bit_string, H, k, n, original_length, max_iterations=50)
                           correct (parity checks still failing after
                           max_iterations) -- a useful health metric
     """
-    bits = np.array([int(b) for b in encoded_bit_string], dtype=np.uint8)
+    bits = _bitstring_to_uint8(encoded_bit_string)
     blocks = bits.reshape(-1, n)
 
-    decoded_msg_bits = []
-    num_blocks_failed = 0
+    corrected, success = ldpc_decode_blocks_batched(blocks, H, max_iterations)
+    num_blocks_failed = int((~success).sum())
 
-    for block in blocks:
-        corrected, success = ldpc_decode_block(block, H, max_iterations)
-        if not success:
-            num_blocks_failed += 1
-        decoded_msg_bits.append(corrected[:k])  # message bits are the first k (systematic)
-
-    decoded_bits = np.concatenate(decoded_msg_bits)
-    decoded_bit_string = ''.join(str(b) for b in decoded_bits)
+    decoded_bits = corrected[:, :k].reshape(-1)  # message bits are the first k (systematic) of each block
+    decoded_bit_string = _uint8_to_bitstring(decoded_bits)
     decoded_bit_string = decoded_bit_string[:original_length]  # trim padding
     return decoded_bit_string, num_blocks_failed
 

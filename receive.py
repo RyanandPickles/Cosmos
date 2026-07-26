@@ -32,7 +32,7 @@ import adi
 PLUTO_RX_URI = "usb:1.11.5"    # from main_rx.py
 CHANNEL = 7                    # from main_rx.py
 GAIN_LEVEL = 80                # from main_rx.py
-SAMPLE_RATE = 5e6              # MUST match send.py's SAMPLE_RATE
+SAMPLE_RATE = 8e6              # MUST match send.py's SAMPLE_RATE
 
 NUM_TRANSMIT_SYMBOLS = 20000
 QAM_ORDER = 16

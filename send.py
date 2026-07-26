@@ -32,13 +32,17 @@ import adi
 PLUTO_TX_URI = "usb:1.12.5"     # from main_tx.py
 CHANNEL = 7                     # from main_tx.py
 POWER_LEVEL = 95                # from main_tx.py
-SAMPLE_RATE = 5e6               # samples/sec. Bumped up from the 1e6 demo
+SAMPLE_RATE = 8e6               # samples/sec. Bumped up from the 1e6 demo
                                  # default -- throughput scales directly
                                  # with this (see fps estimate printed below).
+                                 # At the default NUM_TRANSMIT_SYMBOLS=20000 /
+                                 # sps=10, the radio-limited ceiling needs
+                                 # >=~7.02e6 to clear 30fps at all -- 8e6
+                                 # gives some margin (~34fps ceiling).
                                  # Pluto's practical ceiling over USB with
                                  # pyadi-iio is well under its 61e6 max;
                                  # if you see dropped/garbled buffers, lower
-                                 # this first.
+                                 # this first. MUST match receive.py exactly.
 
 CAM_INDEX = 0
 CAM_WIDTH, CAM_HEIGHT = 160, 120   # transmit resolution. Small on purpose --

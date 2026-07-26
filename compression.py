@@ -195,14 +195,19 @@ class AdaptiveFrameCompressor:
 # Bytes <-> bit-string helpers (to feed ldpc.py, which speaks '0'/'1' strings)
 # ---------------------------------------------------------------
 def bytes_to_bits(data):
-    """bytes -> str of '0'/'1', MSB first per byte."""
-    return ''.join(format(byte, '08b') for byte in data)
+    """bytes -> str of '0'/'1', MSB first per byte. Vectorized with
+    np.unpackbits instead of a per-byte format()/join loop."""
+    arr = np.frombuffer(data, dtype=np.uint8)
+    bits = np.unpackbits(arr)  # MSB-first by default, matches format(byte,'08b')
+    return (bits + ord('0')).tobytes().decode('ascii')
 
 
 def bits_to_bytes(bit_string):
-    """str of '0'/'1' -> bytes. Length must be a multiple of 8 (pad first)."""
+    """str of '0'/'1' -> bytes. Length must be a multiple of 8 (pad first).
+    Vectorized with np.packbits instead of a per-8-chars int()/bytes loop."""
     n = len(bit_string) - (len(bit_string) % 8)
-    return bytes(int(bit_string[i:i + 8], 2) for i in range(0, n, 8))
+    bits = np.frombuffer(bit_string[:n].encode('ascii'), dtype=np.uint8) - ord('0')
+    return np.packbits(bits).tobytes()
 
 
 if __name__ == "__main__":
