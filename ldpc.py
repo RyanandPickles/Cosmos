@@ -1,15 +1,17 @@
+# general format for function definition: description, parameters, and returns to stay organized
 import numpy as np
 
 def gen_ldpc_matricies(k,m,column_weight=3,seed=None)
-    
     """
+Description:
+    Generates the parity check matrix, and other information along with it
 Parameters:
     k: # of message bits
     n: # of parity check bits
     column_weight : number of 1s per column of A (numpy array / matrix) --> col_weight check equations
     seed: ensures randomness
 Returns:
-    A: (m x k) binary numpy array
+    A: (m x k) binary numpy array, is a sparse random binary matrix 
     H: (m x n) binary numpy array, parity check matrix
     n: codeword length (m+k)
     """
@@ -18,12 +20,12 @@ Returns:
     #initialize m by k matrix
     A = np.zeros((m,k), dtype = np.uint8)
     # loops over columns, assigns 1's randomly
-    for columns in range(k):
+    for column in range(k):
         #prevents more 1's than # of rows available
         weight = min(column_weight, m)
         #no duplicate 1's
         rows = rng.choice(m, size=weight, replace=False)
-        A[rows, col] = 1
+        A[rows, column] = 1
     
     #identity matrix of size m x m
     I_m = np.eye(m, dtype=np.uint8)
@@ -32,3 +34,29 @@ Returns:
     H = np.concatenate((A, I_m), axis=1)
     n = k + m
     return A, H, n
+
+def ldpc_encoding_mechanism(message_bits, A):
+    """
+Description:
+    k-bit message --> n-bit codeword
+Parameters:
+    k-bit message
+    A: (m x k) binary numpy array, is a sparse random binary matrix 
+Returns:
+    codeword: 1D array of 0's and 1's of dimensions 1 x n
+    """
+    #converts message bits into an array using 8 bit unsigned integer types
+    message_bits = np.asarray(message_bits, dtype=np.uint8)
+    parity_bits = (A @ message_bits) % 2
+    codeword = np.concatenate((message_bits), parity_bits)
+    return codeword
+
+def bitstring_to_uint8(bit_string):
+    """
+Description:
+    pretty obvious twin:
+Parameters:
+    bit string
+Returns:
+    np.uint8 array
+    """
