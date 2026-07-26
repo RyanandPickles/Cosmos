@@ -228,7 +228,7 @@ Returns:
     decoded_bit_string = decoded_bit_string[:original_length]
     return decoded_bit_string, num_blocks_failed
 
-class LDPC:
+class LDPCCode:
     def __init__(self, k, m, column_weight=3, seed=None):
         self.k = k
         self.m = m
