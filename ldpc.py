@@ -227,3 +227,36 @@ Returns:
 
     decoded_bit_string = decoded_bit_string[:original_length]
     return decoded_bit_string, num_blocks_failed
+
+class LDPC:
+    def __init__(self, k, m, column_weight=3, seed=None):
+        self.k = k
+        self.m = m
+        self.column_weight = column_weight
+        self.seed = seed
+        self.A, self.H, self.n = gen_ldpc_matricies(k, m, column_weight, seed)
+        self.H_sparse = sparse.csr_matrix(self.H.astype(np.float32))
+        self.Ht_sparse = self.H_sparse.T.tocsr()
+
+    def encode(self, bit_string):
+        return ldpc_encode(bit_string, self.A, self.k)
+
+    def decode(self, encoded_bit_string, original_length, max_iterations=10):
+        return ldpc_decode_bitstring(encoded_bit_string, self.H, self.k, self.n, original_length, max_iterations=max_iterations, H_sparse=self.H_sparse, Ht_sparse=self.Ht_sparse)
+
+def transmit_bsc(bit_string, p, seed=None):
+    """
+Description:
+    Simulates a binary symmetric channel for testing purposes 
+Parameters:
+    bit_string: clean bits to be sent
+    p: probability of being flipped
+    seed: ensures randomness
+Returns:
+    noise+bitstring
+    """
+    rng = np.random.default_rng(seed)
+    bits=np.array([int(b) for b in bit_string], dtype=np.uint8)
+    flips = rng.random(bits.shape) < p
+    bits[flips] = 1 - bits[flips]
+    return ''.join(str(b) for b in bits)
