@@ -129,7 +129,12 @@ Returns:
         H_sparse = sparse.csr_matrix(H.astype(np.float32))
     if Ht_sparse is None:
         Ht_sparse = H_sparse.T.tocsr()
-    
+
+    C = blocks.astype(np.float32).copy()
+    #reads number of rows
+    num_blocks = C.shape[0]
+    #looks at which blocks still need fixing
+    active = np.ones(num_blocks, dtype=bool)
 
 def ldpc_decode_block(recieved_bits, H, max_iterations=10):
     """
