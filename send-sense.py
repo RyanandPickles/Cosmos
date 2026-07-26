@@ -115,7 +115,7 @@ def main():
 
     # Build the LDPC code ONCE. This is the entire point of LDPCCode --
     # rebuilding the sparse H every frame would blow the frame time budget.
-    code = LDPCCode(k=LDPC_K, m=LDPC_M, col_weight=LDPC_COL_WEIGHT, seed=LDPC_SEED)
+    code = LDPCCode(k=LDPC_K, m=LDPC_M, column_weight=LDPC_COL_WEIGHT, seed=LDPC_SEED)
     num_tx_symbols, total_encoded_bits = compute_num_tx_symbols(code, QAM_ORDER, FRAME_PAYLOAD_BYTES)
     print(f"LDPC rate: {code.k}/{code.n} ({code.k/code.n:.2f})  "
           f"Frame payload: {FRAME_PAYLOAD_BYTES} bytes -> {num_tx_symbols} QAM symbols/frame")

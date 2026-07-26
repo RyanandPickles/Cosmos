@@ -122,7 +122,7 @@ def main():
 
     # Build the LDPC code ONCE -- must match send.py's k/m/seed exactly or
     # every frame will fail to decode (different code entirely).
-    code = LDPCCode(k=LDPC_K, m=LDPC_M, col_weight=LDPC_COL_WEIGHT, seed=LDPC_SEED)
+    code = LDPCCode(k=LDPC_K, m=LDPC_M, column_weight=LDPC_COL_WEIGHT, seed=LDPC_SEED)
     num_rx_symbols, total_encoded_bits = compute_frame_sizing(code, QAM_ORDER, FRAME_PAYLOAD_BYTES)
     original_length = FRAME_PAYLOAD_BYTES * 8
     print(f"LDPC rate: {code.k}/{code.n} ({code.k/code.n:.2f})  "
