@@ -75,4 +75,24 @@ Returns:
     # makes to uint 8, +48 is ord'0', tobytes translates ascii to string, ascii removes b infront of b"string" then 
     return (bits.astype(np.uint8)+ord('0')).tobytes().decode('ascii')
 
-def ldpc_encode():
+def ldpc_encode(bit_string, A, k):
+    """
+Description:
+    Encode whole bitstring by splitting it into smaller k-length bit strings and encoding them simultaneously
+Parameters:
+    bitstring
+    A matrix: the generator matrix without the identity matrix
+    k: length of the individual bit strings
+Returns:
+    encoded bit string
+    original length of the string
+    """
+    original_length=len(bit_string)
+
+    #In order to get it in multiples of k, add zeros at end of last block
+    pad_length = (-original_length) % k
+    padded_string = bit_string + '0' * pad_length
+    bits = bitstring_to_uint8(padded_string)
+    #calculate number of rows needed - e.g. num/k rows
+    blocks = bits.reshape(-1,k)
+    
