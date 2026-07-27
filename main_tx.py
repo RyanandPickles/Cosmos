@@ -15,7 +15,7 @@ dir_plots = 'plots/'
 # ---------------------------------------------------------------
 # Setup.
 # --------------------------------------3-------------------------
-sdr_tx = adi.Pluto("usb:1.12.5")
+sdr_tx = adi.Pluto("usb:1.1.5")
 
 tx = PlutoTransmitter()
 tx.set_sdr(sdr_tx)
