@@ -30,7 +30,6 @@ M=16
 k = int(np.log2(M))
 rx.num_transmit_symbols = 762 # change these hardcoded values later pls
 remainder = 0  # change these hardcoded values later pls
-
 constellation = get_qam_constellation(M, Es=1)
 
 
@@ -39,6 +38,10 @@ constellation = get_qam_constellation(M, Es=1)
 # Receive.
 # ---------------------------------------------------------------
 rx_symbols = rx.receive()
+
+rx_bits = qam_symbols_to_bits(rx_symbols, M, remainder)
+rx_bytes = bits_to_bytes(rx_bits)
+bytes_to_file(rx_bytes, "")
 
 if True:
     plt.figure(figsize=(6, 6))
