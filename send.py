@@ -56,7 +56,7 @@ FRAME_PAYLOAD_BYTES = 2048
 HEADER_BYTES = 8
 # ====================================================================================
 
-SDR_TX_URI = "usb:1.12.5"
+SDR_TX_URI = "usb:1.1.5"
 SAMPLE_RATE = 6_000_000
 CHANNEL = 7
 TX_POWER_LEVEL = 95
