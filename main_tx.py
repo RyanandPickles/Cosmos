@@ -25,9 +25,9 @@ tx.set_power_level(90)
 # ---------------------------------------------------------------
 # Generate random symbols.
 # ---------------------------------------------------------------
-num_pam_symbols = 8192 # number of random data symbols to generate
-tx_symbols = 2*np.random.randint(0,2,num_pam_symbols) - 1
-tx_symbols = np.real(tx_symbols)
+M=16
+num_symbols = 8192 # number of random data symbols to generate
+tx_symbols, const = gen_rand_qam_symbols(num_symbols, M=M)
 
 # ---------------------------------------------------------------
 # Transmit.
