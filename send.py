@@ -129,51 +129,29 @@ def main():
     f = open(args.source, 'rb')
     total_bytes_sent = 0
 
+# --- TEMPORARY DIAGNOSTIC: compute ONE chunk's signal once, then just
+    # keep re-transmitting that SAME signal forever, instead of advancing
+    # through the file. Matches main_tx.py's "encode once, cycle forever"
+    # pattern -- isolates whether TX constantly changing buffers is why
+    # RX can't sync, independent of QAM/LDPC content itself. ---
+    chunk = read_next_chunk(f, DATA_CAPACITY)
+    packed = pack_frame(chunk, FRAME_PAYLOAD_BYTES)
+    bitstring = bytes_to_bitstring(packed)
+    encoded_bits, original_length = code.encode(bitstring)
+    bits_array = bitstring_to_uint8(encoded_bits)
+    qam_symbols, _ = bits_to_qam_symbols(bits_array, QAM_ORDER)
+    if len(qam_symbols) < num_tx_symbols:
+        qam_symbols = np.concatenate([qam_symbols, np.zeros(num_tx_symbols - len(qam_symbols), dtype=qam_symbols.dtype)])
+    elif len(qam_symbols) > num_tx_symbols:
+        qam_symbols = qam_symbols[:num_tx_symbols]
+
+    tx.transmit(qam_symbols)
+    print("Transmitting the SAME chunk repeatedly (diagnostic mode)...")
     while True:
-        t_start = time.time()
-
-        chunk = read_next_chunk(f, DATA_CAPACITY)
-
-        if len(chunk) == 0:
-            # EOF on a regular file (a FIFO would have blocked instead of returning empty,
-            # unless the writer closed it, which counts as a real end too)
-            if args.loop and not is_fifo:
-                f.close()
-                f = open(args.source, 'rb')
-                print(f"[chunk {chunk_index}] reached end of source, looping back to start")
-                continue
-            else:
-                print(f"[chunk {chunk_index}] end of stream, sent {total_bytes_sent} bytes total. Stopping.")
-                break
-
-        packed = pack_frame(chunk, FRAME_PAYLOAD_BYTES)
-        bitstring = bytes_to_bitstring(packed)
-
-        encoded_bits, original_length = code.encode(bitstring)
-        bits_array = bitstring_to_uint8(encoded_bits)
-        qam_symbols, _ = bits_to_qam_symbols(bits_array, QAM_ORDER)
-
-        if len(qam_symbols) < num_tx_symbols:
-            qam_symbols = np.concatenate([qam_symbols, np.zeros(num_tx_symbols - len(qam_symbols), dtype=qam_symbols.dtype)])
-        elif len(qam_symbols) > num_tx_symbols:
-            qam_symbols = qam_symbols[:num_tx_symbols]
-
-        t0 = time.time()
-        tx.transmit(qam_symbols)
-        print(f"  tx.transmit() alone took {(time.time()-t0)*1000:.1f} ms")
-
-        total_bytes_sent += len(chunk)
-        chunk_index += 1
-
-        elapsed = time.time() - t_start
-        sleep_time = frame_interval - elapsed
-        if sleep_time > 0:
-            time.sleep(sleep_time)
-        else:
-            print(f"[chunk {chunk_index}] encode+transmit took {elapsed*1000:.1f} ms -- can't hit {args.fps} chunks/sec")
+        time.sleep(10)
+        print("Transmitting...")
 
     f.close()
-
 
 if __name__ == "__main__":
     main()
