@@ -15,12 +15,12 @@ dir_plots = 'plots/'
 # ---------------------------------------------------------------
 # Setup.
 # ---------------------------------------------------------------
-sdr_rx = adi.Pluto("usb:0.1.5")
+sdr_rx = adi.Pluto("usb:1.11.5")
 
 rx = PlutoReceiver()
 rx.set_sdr(sdr_rx)
 rx.set_buffer_size(500e3)
-rx.set_channel(7)
+rx.set_channel(9)
 rx.set_gain_level(80)
 rx.desired_transmit_symbols_real = True
 rx.num_transmit_symbols = 200
