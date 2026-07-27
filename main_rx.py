@@ -28,8 +28,8 @@ rx.num_transmit_symbols = 200
 
 M=16
 k = int(np.log2(M))
-rx.num_transmit_symbols = 726 # change these hardcoded values later pls
-remainder = 2  # change these hardcoded values later pls
+rx.num_transmit_symbols = 762 # change these hardcoded values later pls
+remainder = 0  # change these hardcoded values later pls
 
 constellation = get_qam_constellation(M, Es=1)
 
