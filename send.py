@@ -36,7 +36,7 @@ Parameters:
 Returns: 
     """
     frame_bits = frame_payload_bytes * 8
-    num_blocks = -(-frame_bits // code.K) #ceiling
+    num_blocks = -(-frame_bits // code.k) #ceiling
     total_encoded_bits = num_blocks * code.n
     bits_per_symbol = int(np.log2(qam_order))
     num_qam_symbols = -(-total_encoded_bits // bits_per_symbol) #ceiling
@@ -51,7 +51,7 @@ Returns: breh im too lazy
     """
     data_capacity = payload_size - HEADER_BYTES
     if len(jpg_bytes) > data_capacity:
-        raise ValueError(f"jpg size {len(jpg_bytes)} exceeds {data_capcity} bytes")
+        raise ValueError(f"jpg size {len(jpg_bytes)} exceeds {data_capacity} bytes")
     #calculates cyclic reduncancy check for error detection, 32 bits
     crc = zlib.crc32(jpg_bytes) & 0xFFFFFFFF
     #length of jpg is in 4 raw bytes
@@ -89,7 +89,7 @@ def main():
     tx = PlutoTransmitter()
     tx.set_sdr(sdr_tx)
     tx.set_sample_rate(SAMPLE_RATE)
-    tx.set_sample_rate(CHANNEL)
+    tx.set_channel(CHANNEL)
     tx.set_power_level(TX_POWER_LEVEL)
 
 ######### downdowndowndowndowndowndowndowndowndowndowndown
