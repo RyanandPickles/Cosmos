@@ -19,13 +19,13 @@ sdr_tx = adi.Pluto("usb:1.1.5")
 
 tx = PlutoTransmitter()
 tx.set_sdr(sdr_tx)
-tx.set_channel(9)
+tx.set_channel(7)
 tx.set_power_level(75)
 
 # ---------------------------------------------------------------
 # Generate random symbols.
 # ---------------------------------------------------------------
-num_pam_symbols = 200 # number of random data symbols to generate
+num_pam_symbols = 8192 # number of random data symbols to generate
 tx_symbols = 2*np.random.randint(0,2,num_pam_symbols) - 1
 tx_symbols = np.real(tx_symbols)
 
