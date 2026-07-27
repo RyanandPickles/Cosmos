@@ -6,6 +6,7 @@ import sys
 
 from cosmos import *
 from digicomm import *
+from functions import file_to_bytes, bytes_to_bits
 
 import adi
 
@@ -25,9 +26,15 @@ tx.set_power_level(95)
 # ---------------------------------------------------------------
 # Generate random symbols.
 # ---------------------------------------------------------------
-num_symbols = 200 # number of random data symbols to generate
+
 M=16
-tx_symbols, const = gen_rand_qam_symbols(num_symbols, M=M)
+
+filebytes = file_to_bytes("file path remember to change this btw")
+filebits = bytes_to_bits(filebytes)
+
+tx_symbols, remainder = bits_to_qam_symbols(filebits, M)
+constellation = get_qam_constellation(M, Es=1)
+
 # ---------------------------------------------------------------
 # Transmit.
 # ---------------------------------------------------------------
