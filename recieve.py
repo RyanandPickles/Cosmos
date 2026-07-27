@@ -119,7 +119,9 @@ def main():
         chunk_idx += 1
 
         try:
+            t0 = time.time()
             rx_symbols = rx.receive()
+            print(f"  rx.receive() alone took {(time.time()-t0)*1000:.1f} ms")
         except Exception as e:
             chunks_dropped += 1
             print(f"[chunk {chunk_idx}] receive/sync failed ({e}) -- GAP at byte offset {byte_offset}")
