@@ -34,7 +34,7 @@ filebits = bytes_to_bits(filebytes)
 
 tx_symbols, remainder = bits_to_qam_symbols(filebits, M)
 constellation = get_qam_constellation(M, Es=1)
-
+print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # ---------------------------------------------------------------
 # Transmit.
 # ---------------------------------------------------------------
