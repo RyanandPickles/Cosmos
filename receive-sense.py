@@ -66,7 +66,7 @@ LDPC_MAX_ITERATIONS = 15   # bump this before reaching for a stronger decoder --
 
 SDR_RX_URI = "usb:1.11.5"
 SAMPLE_RATE = 6_000_000
-RX_BUFFER_SIZE = 500e3     # TUNE THIS -- must comfortably fit preamble +
+RX_BUFFER_SIZE = 230e3     # TUNE THIS -- must comfortably fit preamble +
                            # pulse-shaped data length in samples; verify
                            # against your actual num_rx_symbols (printed below)
 CHANNEL = 7
