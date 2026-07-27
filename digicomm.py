@@ -642,7 +642,26 @@ def bits_to_qam_symbols(bits, M):
     bit_groups = bits.reshape(-1, k)
     decimal_values = (np.array([int("".join(map(str, group)), 2) for group in bit_groups]))
     return constellation[decimal_values], remainder
+def qam_symbols_to_bits(symbols, M, remainder)
+    k = int(np.log2(M))
+    constellation = get_qam_constellation(M, Es=1)
+    symbols = np.asarray(symbols).flatten()
+    indicies=[]
+    
+    for s in symbols:
+        distance = np.abs(s-constellation)
+        closest_index = np.argmin(distances)
+        indicies.append(closest_index)
 
+    bits = []
+    for index in indicies:
+        binary_str = format(idx, f'0{k}b')
+        for bit in binary_str:
+            bits.append(int(bit))
+    bits=np.array(bits)
+    
+    if remainder !=0:
+        bits = bits[:-(k-remainder)]
 def downsample_signal(x, M):
     """
     Downsamples a signal by an integer factor M using an antialiasing filter
