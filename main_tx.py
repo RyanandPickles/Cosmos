@@ -29,7 +29,7 @@ tx.set_power_level(95)
 
 M=16
 
-filebytes = file_to_bytes("file path remember to change this btw")
+filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.rtf")
 filebits = bytes_to_bits(filebytes)
 
 tx_symbols, remainder = bits_to_qam_symbols(filebits, M)
