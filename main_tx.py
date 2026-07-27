@@ -27,7 +27,7 @@ tx.set_power_level(95)
 # ---------------------------------------------------------------
 num_pam_symbols = 200 # number of random data symbols to generate
 M=16
-tx_symbols, const = gen_rand_qam_symbols(num_symbols, M=M)
+tx_symbols, const = gen_rand_qam_symbols(num_pam_symbols, M=M)
 # ---------------------------------------------------------------
 # Transmit.
 # ---------------------------------------------------------------
