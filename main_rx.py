@@ -33,7 +33,7 @@ rx_symbols = rx.receive()
 
 if True:
     plt.figure(figsize=(6, 6))
-    plt.scatter(np.real(rx_symbols),np.imag(rx_symbols), color='red', label='Received PAM Symbols')
+    plt.scatter(np.real(rx_symbols),np.imag(rx_symbols), color='red', label='Received QAM Symbols')
     plt.title('Data Symbols After Equalization')
     plt.xlabel('Real Component')
     plt.ylabel('Imaginary Component')
