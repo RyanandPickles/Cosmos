@@ -17,7 +17,7 @@ dir_plots = 'plots/'
 # ---------------------------------------------------------------
 # KEEP YOUR OWN WORKING ADDRESS HERE -- don't overwrite it with this
 # placeholder, use whatever's already working for you in send.py.
-sdr_tx = adi.Pluto("usb:1.12.5")
+sdr_tx = adi.Pluto("usb:1.1.5")
 
 tx = PlutoTransmitter()
 tx.set_sdr(sdr_tx)
