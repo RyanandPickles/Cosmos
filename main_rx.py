@@ -17,7 +17,7 @@ dir_plots = 'plots/'
 # ---------------------------------------------------------------
 # KEEP YOUR OWN WORKING ADDRESS HERE -- don't overwrite it with this
 # placeholder, use whatever's already working for you in recieve.py.
-sdr_rx = adi.Pluto("usb:1.11.5")
+sdr_rx = adi.Pluto("usb:0.1.5")
 
 rx = PlutoReceiver()
 rx.set_sdr(sdr_rx)
