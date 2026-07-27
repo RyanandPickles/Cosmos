@@ -6,6 +6,7 @@ import sys
 
 from cosmos import *
 from digicomm import *
+from functions import bits_to_bytes, bytes_to_file
 
 import adi
 
@@ -24,6 +25,14 @@ rx.set_channel(9)
 rx.set_gain_level(80)
 rx.desired_transmit_symbols_real = False
 rx.num_transmit_symbols = 200
+
+M=16
+k = int(np.log2(M))
+rx.num_transmit_symbols = 726 # change these hardcoded values later pls
+remainder = 2  # change these hardcoded values later pls
+
+constellation = get_qam_constellation(M, Es=1)
+
 
 # print(rx.sdr)
 # ---------------------------------------------------------------
