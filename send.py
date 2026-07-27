@@ -158,7 +158,9 @@ def main():
         elif len(qam_symbols) > num_tx_symbols:
             qam_symbols = qam_symbols[:num_tx_symbols]
 
+        t0 = time.time()
         tx.transmit(qam_symbols)
+        print(f"  tx.transmit() alone took {(time.time()-t0)*1000:.1f} ms")
 
         total_bytes_sent += len(chunk)
         chunk_index += 1
