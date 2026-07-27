@@ -6,7 +6,7 @@ import sys
 
 from cosmos import *
 from digicomm import *
-from functions import file_to_bytes, bytes_to_bits
+from helpers import file_to_bytes, bytes_to_bits
 
 import adi
 
