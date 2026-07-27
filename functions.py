@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def file_to_bytes(file_path):
     with open(file_path, "rb") as file:
         file_contents = file.read()
