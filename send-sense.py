@@ -52,7 +52,7 @@ LDPC_M = 256              # parity bits per LDPC block (k=m -> rate 1/2)
 LDPC_COL_WEIGHT = 3
 LDPC_SEED = 42            # TX and RX must build the identical random code
 
-QAM_ORDER = 4             # 4 = QPSK. Bump to 16 for more throughput, at the
+QAM_ORDER = 16             # 4 = QPSK. Bump to 16 for more throughput, at the
                           # cost of needing a cleaner channel to hit the
                           # same block-success rate (more bits/symbol =
                           # closer constellation points = less noise margin).
