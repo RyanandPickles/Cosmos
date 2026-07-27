@@ -26,7 +26,7 @@ tx.set_power_level(90)
 # Generate random symbols.
 # ---------------------------------------------------------------
 M=16
-num_symbols = 8192 # number of random data symbols to generate
+num_symbols = 200 # number of random data symbols to generate
 tx_symbols, const = gen_rand_qam_symbols(num_symbols, M=M)
 
 # ---------------------------------------------------------------
