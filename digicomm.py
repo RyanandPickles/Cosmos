@@ -2,10 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.signal as signal
-
 def get_zadoff_chu_sequence(N, root):
     """
     Generate a length-N Zadoff-Chu sequence.
