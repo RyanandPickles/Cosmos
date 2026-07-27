@@ -172,6 +172,7 @@ class PlutoTransmitter:
         symbols = np.concatenate((preamble_symbols, symbols))
         signal = self.pulse_shape_symbols(symbols)
         signal_scaled = self.scale_transmit_signal(signal)
+        self.sdr.tx_destroy_buffer()
         self.sdr.tx(signal_scaled)
         print('Transmitting...')
         return
