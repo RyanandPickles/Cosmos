@@ -644,7 +644,7 @@ def bits_to_qam_symbols(bits, M):
 
     constellation = get_qam_constellation(M,Es=1)
     bit_groups = bits.reshape(-1, k)
-    decimal_values = int(np.array([int("".join(map(str, group)), 2) for group in bit_groups]))
+    decimal_values = (np.array([int("".join(map(str, group)), 2) for group in bit_groups]))
     return constellation[decimal_values], remainder
 
 def downsample_signal(x, M):
