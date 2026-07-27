@@ -24,7 +24,7 @@ rx.set_buffer_size(500e3)
 rx.set_channel(7)
 rx.set_gain_level(80)
 rx.desired_transmit_symbols_real = True
-rx.num_transmit_symbols = 200
+rx.num_transmit_symbols = 8192
 
 # print(rx.sdr)
 # ---------------------------------------------------------------
