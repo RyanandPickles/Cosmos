@@ -40,7 +40,10 @@ message_len = len(filebits)
 binary_message_len = format(message_len, f'0{header_bits}b')
 header_bit_list = [int(digit) for digit in binary_message_len]
 header_bit_values = np.array(header_bit_list)
-all_bits = np.concatenate((header_bit_values, filebits))
+padding_zeros = max_bits - message_len
+pad_bits = np.random.randint(0, 2, padding_zeros)
+padded_filebits = np.concatenate((filebits, pad_bits))
+all_bits = np.concatenate((header_bit_values, padded_filebits))
 
 tx_symbols, remainder = bits_to_qam_symbols(all_bits, M)
 constellation = get_qam_constellation(M, Es=1)
