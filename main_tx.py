@@ -15,34 +15,32 @@ dir_plots = 'plots/'
 
 # ---------------------------------------------------------------
 # Setup.
-# --------------------------------------3-------------------------
+# ---------------------------------------------------------------
 sdr_tx = adi.Pluto("usb:0.1.5")
 
 tx = PlutoTransmitter()
 tx.set_sdr(sdr_tx)
 tx.set_channel(7)
-tx.set_power_level(95)
+tx.set_power_level(75)
 
 # ---------------------------------------------------------------
-# Generate random symbols.
+# Generate symbols from file data.
 # ---------------------------------------------------------------
 
-M=16
+M = 16
 k = int(np.log2(M))
-header_bits=32
-max_bits=7968
+header_bits = 32
+max_bits = 7968
 filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.txt")
 filebits = bytes_to_bits(filebytes)
 if len(filebits) > max_bits:
     raise ValueError("file too big bud")
 
 message_len = len(filebits)
-binary_message_len=format(message_len, f'0{header_bits}b')
+binary_message_len = format(message_len, f'0{header_bits}b')
 header_bit_list = [int(digit) for digit in binary_message_len]
 header_bit_values = np.array(header_bit_list)
-padding_zeros = max_bits - message_len
-padded_filebits = np.pad(filebits, (0, padding_zeros))
-all_bits = np.concatenate((header_bit_values, padded_filebits))
+all_bits = np.concatenate((header_bit_values, filebits))
 
 tx_symbols, remainder = bits_to_qam_symbols(all_bits, M)
 constellation = get_qam_constellation(M, Es=1)
@@ -55,7 +53,3 @@ tx.transmit(tx_symbols)
 while True:
     print("Transmitting...")
     time.sleep(10)
-
-
-
-
