@@ -20,7 +20,7 @@ sdr_rx = adi.Pluto("usb:0.1.5")
 
 rx = PlutoReceiver()
 rx.set_sdr(sdr_rx)
-rx.set_buffer_size(500e3)
+rx.set_buffer_size(1e6)
 rx.set_channel(7)
 rx.set_gain_level(80)
 rx.desired_transmit_symbols_real = False
@@ -51,7 +51,7 @@ message_len = int(header_string, 2)
 message_bits = rx_bits[header_bits: header_bits + message_len]
 
 rx_bytes = bits_to_bytes(message_bits)
-bytes_to_file(rx_bytes, "/Users/vincent/Cosmos/received.docx")
+bytes_to_file(rx_bytes, "/Users/vincent/Cosmos/received.log")
 
 if True:
     plt.figure(figsize=(6, 6))
