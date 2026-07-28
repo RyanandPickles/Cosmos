@@ -24,12 +24,11 @@ rx.set_buffer_size(1e6)
 rx.set_channel(7)
 rx.set_gain_level(80)
 rx.desired_transmit_symbols_real = False
-rx.num_transmit_symbols = 200
 
 M=16
 k = int(np.log2(M))
 header_bits = 32
-max_bits=262144
+max_bits=800
 
 rx.num_transmit_symbols = (header_bits+max_bits) // k 
 
