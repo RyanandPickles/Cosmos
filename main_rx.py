@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 import time 
 import sys
+import os
+from datetime import datetime
+
 
 from cosmos import *
 from digicomm import *
@@ -50,7 +53,13 @@ message_len = int(header_string, 2)
 message_bits = rx_bits[header_bits: header_bits + message_len]
 
 rx_bytes = bits_to_bytes(message_bits)
-bytes_to_file(rx_bytes, "/Users/vincent/Desktop/SDRReceivedLogs")
+
+output_dir = "/Users/vincent/Desktop/SDRReceivedLogs"
+os.makedirs(output_dir, exist_ok=True)
+output_filename = f"rx_{datetime.now().strftime('%Y%m%d_%H%M%S')}.bin"
+output_path = os.path.join(output_dir, output_filename)
+
+bytes_to_file(rx_bytes, output_path)
 
 if True:
     plt.figure(figsize=(6, 6))
