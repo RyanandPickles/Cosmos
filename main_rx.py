@@ -28,8 +28,11 @@ rx.num_transmit_symbols = 200
 
 M=16
 k = int(np.log2(M))
-rx.num_transmit_symbols = 762 # change these hardcoded values later pls
-remainder = 0  # change these hardcoded values later pls
+header_bits = 32
+max_bits=262144
+
+rx.num_transmit_symbols = (header_bits+max_bits) // k 
+
 constellation = get_qam_constellation(M, Es=1)
 
 
@@ -39,8 +42,15 @@ constellation = get_qam_constellation(M, Es=1)
 # ---------------------------------------------------------------
 rx_symbols = rx.receive()
 
-rx_bits = qam_symbols_to_bits(rx_symbols, M, remainder)
-rx_bytes = bits_to_bytes(rx_bits)
+rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
+
+header_bit_values = rx_bits[:header_bits]
+header_string = "".join(str(b) for b in header_bit_values)
+message_len = int(header_string, 2)
+
+message_bits = rx_bits[header_bits: header_bits + message_len]
+
+rx_bytes = bits_to_bytes(message_bits)
 bytes_to_file(rx_bytes, "/Users/vincent/Cosmos/received.docx")
 
 if True:
