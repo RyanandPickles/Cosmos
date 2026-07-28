@@ -28,7 +28,7 @@ tx.set_power_level(95)
 # ---------------------------------------------------------------
 
 M=16
-k= int(np.log2(M))
+k = int(np.log2(M))
 header_bits=32
 max_bits=7968
 filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.txt")
