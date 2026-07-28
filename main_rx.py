@@ -56,7 +56,7 @@ rx_bytes = bits_to_bytes(message_bits)
 
 output_dir = "/Users/vincent/Desktop/SDRReceivedLogs"
 os.makedirs(output_dir, exist_ok=True)
-output_filename = f"rx_{datetime.now().strftime('%Y%m%d_%H%M%S')}.bin"
+output_filename = f"rx_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 output_path = os.path.join(output_dir, output_filename)
 
 bytes_to_file(rx_bytes, output_path)
