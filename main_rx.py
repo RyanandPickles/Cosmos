@@ -50,7 +50,7 @@ message_len = int(header_string, 2)
 message_bits = rx_bits[header_bits: header_bits + message_len]
 
 rx_bytes = bits_to_bytes(message_bits)
-bytes_to_file(rx_bytes, "/Users/vincent/Cosmos/received.log")
+bytes_to_file(rx_bytes, "/Users/vincent/Desktop/SDRReceivedLogs")
 
 if True:
     plt.figure(figsize=(6, 6))
