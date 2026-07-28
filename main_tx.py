@@ -31,13 +31,20 @@ M=16
 k= int(np.log2(M))
 header_bits=32
 max_bits=262144
-
 filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.txt")
 filebits = bytes_to_bits(filebytes)
 if len(filebits) > max_bits:
     raise ValueError("file too big bud")
 
-tx_symbols, remainder = bits_to_qam_symbols(filebits, M)
+message_len = len(filebits)
+binary_message_len=format(message_len, f'0{header_bits}b')
+header_bit_list = [int(digit) for digit in binary_message_len]
+header_bit_values = np.array(header_bit_list)
+padding_zeros = max_bits - message_len
+padded_filebits = np.pad(filebits, (0, padding_zeros))
+all_bits = np.concatenate((header_bit_values, padded_filebits))
+
+tx_symbols, remainder = bits_to_qam_symbols(all_bits, M)
 constellation = get_qam_constellation(M, Es=1)
 print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # ---------------------------------------------------------------
