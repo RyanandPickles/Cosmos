@@ -6,6 +6,7 @@ import sys
 import os
 from datetime import datetime
 
+from cryptography.fernet import Fernet, InvalidToken
 
 from cosmos import *
 from digicomm import *
@@ -53,6 +54,10 @@ message_len = int(header_string, 2)
 message_bits = rx_bits[header_bits: header_bits + message_len]
 
 rx_bytes = bits_to_bytes(message_bits)
+
+KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
+fernet = Fernet(KEY)
+rx_bytes = fernet.decrypt(rx_bytes)
 
 output_dir = "/Users/vincent/Desktop/SDRReceivedLogs"
 os.makedirs(output_dir, exist_ok=True)
