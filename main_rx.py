@@ -32,7 +32,7 @@ rx.desired_transmit_symbols_real = False
 M=16
 k = int(np.log2(M))
 header_bits = 32
-max_bits=7968
+max_bits=19968
 
 rx.num_transmit_symbols = (header_bits+max_bits) // k 
 
