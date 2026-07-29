@@ -4,6 +4,8 @@ import scipy.signal as signal
 import time 
 import sys
 
+from cryptography.fernet import Fernet
+
 from cosmos import *
 from digicomm import *
 from helpers import file_to_bytes, bytes_to_bits
@@ -31,8 +33,15 @@ M = 16
 k = int(np.log2(M))
 header_bits = 32
 max_bits = 7968
+
+KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
+fernet = Fernet(KEY)
+
+
 filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.txt")
-filebits = bytes_to_bits(filebytes)
+encrypted_bytes = fernet.encrypt(filebytes)
+
+filebits = bytes_to_bits(encrypted_bytes)
 if len(filebits) > max_bits:
     raise ValueError("file too big bud")
 
