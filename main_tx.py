@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 import time 
 import sys
+import argparse
 
 from cryptography.fernet import Fernet
 
@@ -14,6 +15,18 @@ import adi
 
 # Directory for saving plots
 dir_plots = 'plots/'
+
+# ---------------------------------------------------------------
+# Args.
+# ---------------------------------------------------------------
+parser = argparse.ArgumentParser(description="Encrypt + transmit a file over the Pluto SDR link.")
+parser.add_argument(
+    "file_path",
+    nargs="?",
+    default="/Users/ryanli/Desktop/Test.txt",
+    help="Path of the file to encrypt and transmit (defaults to the test file).",
+)
+args = parser.parse_args()
 
 # ---------------------------------------------------------------
 # Setup.
@@ -38,7 +51,8 @@ KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
 fernet = Fernet(KEY)
 
 
-filebytes = file_to_bytes("/Users/ryanli/Desktop/Test.txt")
+print(f"Reading file to transmit: {args.file_path}")
+filebytes = file_to_bytes(args.file_path)
 encrypted_bytes = fernet.encrypt(filebytes)
 
 filebits = bytes_to_bits(encrypted_bytes)
@@ -61,7 +75,4 @@ print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # Transmit.
 # ---------------------------------------------------------------
 tx.transmit(tx_symbols)
-
-while True:
-    print("Transmitting...")
-    time.sleep(10)
+time.sleep(5)

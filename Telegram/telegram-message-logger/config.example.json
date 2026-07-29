@@ -1,0 +1,7 @@
+{
+  "api_id": 12345678,
+  "api_hash": "replace_with_your_api_hash",
+  "rotation_seconds": 300,
+  "log_directory": "logs",
+  "session_name": "telegram_user"
+}
