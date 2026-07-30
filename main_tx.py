@@ -4,6 +4,7 @@ import scipy.signal as signal
 import time 
 import sys
 import argparse
+import os
 from cryptography.fernet import Fernet
 
 from cosmos import *
