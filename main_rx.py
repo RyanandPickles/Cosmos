@@ -249,8 +249,8 @@ def main() -> None:
 
                 message_bits = rx_bits[HEADER_BITS:required_bits]
                 rx_bytes = bits_to_bytes(message_bits)
-                rx_bytes = decrypt_file(rx_bytes, KEY)
-                rx_bytes = decompress_file(rx_bytes)
+                #rx_bytes = decrypt_file(rx_bytes, KEY)
+                #rx_bytes = decompress_file(rx_bytes)
                 selected_bytes = select_message_fields(rx_bytes)
                 # add the selected messages to the temporary .log
                 writer.append(selected_bytes)
