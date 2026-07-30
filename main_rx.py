@@ -22,7 +22,6 @@ from helpers import bits_to_bytes, decompress_file, decrypt_file
 #Change only this number to control the length of each completed log, in sec
 ROTATION_SECONDS = 3600
 OUTPUT_DIR = Path("/Users/vincent/Desktop/SDRReceivedLogs")
-#Change the PLUTO URI everytime u use it
 PLUTO_URI = "usb:1.1.5"
 CHANNEL = 7
 GAIN_LEVEL = 80
@@ -40,17 +39,6 @@ def utc_file_timestamp(value: datetime) -> str:
     """Format a UTC timestamp for a completed log filename."""
     return value.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
 
-#创建临时 .part 文件
-#        ↓
-#不断 append 新消息
-#        ↓
-#ROTATION_SECONDS 到期
-#        ↓
-#关闭并保存为正式 .log
-#        ↓
-#马上创建新的 .part
-#        ↓
-#继续循环
 class RotatingLogWriter:
     """Collect received payloads in a temporary file and rotate by time."""
 
