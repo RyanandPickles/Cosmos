@@ -10,7 +10,7 @@ import numpy as np
 from cryptography.fernet import InvalidToken
 from cosmos import PlutoReceiver
 from digicomm import qam_symbols_to_bits
-from helpers import bits_to_bytes
+from helpers import *
 import traceback
 
 OUTPUT_DIR = Path("/Users/vincent/Desktop/SDRReceivedLogs")
@@ -73,7 +73,12 @@ def main() -> None:
                     continue
 
                 message_bits = rx_bits[HEADER_BITS:required_bits]
+                
                 rx_bytes = bits_to_bytes(message_bits)
+
+                KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
+                rx_bytes = decrypt_file(rx_bytes, KEY)
+                rx_bytes = decompress_file(rx_bytes)
 
                 if rx_bytes == last_message:
                     print("Skipping duplicate message")
