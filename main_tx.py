@@ -47,7 +47,7 @@ if not test:
 M = 16
 k = int(np.log2(M))
 header_bits = 32
-max_bits = 19968
+max_bits = 7968
 
 KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
 
