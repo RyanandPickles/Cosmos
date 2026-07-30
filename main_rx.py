@@ -62,20 +62,18 @@ def main() -> None:
                 if message_len <= 0 or message_len > MAX_BITS:
                     print(f"Decode failed: invalid message length {message_len}")
                     continue
-
                 if message_len % 8 != 0:
                     print(f"Decode failed: message length {message_len} not byte-aligned")
                     continue
-
+                    
                 required_bits = HEADER_BITS + message_len
+                
                 if len(rx_bits) < required_bits:
                     print(f"Decode failed: need {required_bits} bits, got {len(rx_bits)}")
                     continue
 
                 message_bits = rx_bits[HEADER_BITS:required_bits]
-                
                 rx_bytes = bits_to_bytes(message_bits)
-
                 KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
                 rx_bytes = decrypt_file(rx_bytes, KEY)
                 rx_bytes = decompress_file(rx_bytes)
@@ -107,11 +105,9 @@ def main() -> None:
                         print(f"Saved {len(window_messages)} messages to {output_path}")
                     window_messages = []
                     window_start = time.monotonic()
-
             except Exception:
                 traceback.print_exc()
                 continue
-
     except KeyboardInterrupt:
         if window_messages:
             timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
