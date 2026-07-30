@@ -2,7 +2,7 @@
 from __future__ import annotations
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 import matplotlib.pyplot as plt
 import adi
@@ -44,6 +44,7 @@ def main() -> None:
 
     window_start = time.monotonic()
     window_messages = []
+    last_message = None
 
     try:
         while True:
@@ -52,7 +53,7 @@ def main() -> None:
                 rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
 
                 if len(rx_bits) < HEADER_BITS:
-                    print(f"Decode failed: frame too short")
+                    print("Decode failed: frame too short")
                     continue
 
                 header_string = "".join(str(int(b)) for b in rx_bits[:HEADER_BITS])
@@ -74,6 +75,11 @@ def main() -> None:
                 message_bits = rx_bits[HEADER_BITS:required_bits]
                 rx_bytes = bits_to_bytes(message_bits)
 
+                if rx_bytes == last_message:
+                    print("Skipping duplicate message")
+                    continue
+
+                last_message = rx_bytes
                 window_messages.append(rx_bytes)
                 print(f"Got message {len(window_messages)} in current window")
                 print(f"Content: {rx_bytes[:200]}")
