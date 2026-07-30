@@ -16,7 +16,6 @@ def transfer_log(log_path: Path) -> None:
         cwd=BASE_DIR,
         check=True,
     )
-    log_path.unlink()
 
 def main() -> None:
     if len(sys.argv) != 2:
