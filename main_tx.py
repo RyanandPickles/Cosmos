@@ -12,6 +12,9 @@ from helpers import *
 
 import adi
 
+test=False
+
+
 # Directory for saving plots
 dir_plots = 'plots/'
 
@@ -30,12 +33,12 @@ args = parser.parse_args()
 # ---------------------------------------------------------------
 # Setup.
 # ---------------------------------------------------------------
-sdr_tx = adi.Pluto("usb:1.1.5")
-
-tx = PlutoTransmitter()
-tx.set_sdr(sdr_tx)
-tx.set_channel(7)
-tx.set_power_level(90)
+if not Test:
+    sdr_tx = adi.Pluto("usb:1.1.5")
+    tx = PlutoTransmitter()
+    tx.set_sdr(sdr_tx)
+    tx.set_channel(7)
+    tx.set_power_level(90)
 
 # ---------------------------------------------------------------
 # Generate symbols from file data.
@@ -74,4 +77,23 @@ print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # ---------------------------------------------------------------
 # Transmit.
 # ---------------------------------------------------------------
-tx.transmit(tx_symbols)
+if test:
+    rx_bits = qam_symbols_to_bits(tx_symbols, M, remainder)
+    header_string = "".join(str(b) for b in rx_bits[:header_bits])
+    message_len = int(header_string, 2)
+    message_bits = rx_bits[header_bits: header_bits + message_len]
+    rx_bytes = bits_to_bytes(message_bits)
+    rx_bytes = decrypt_file(rx_bytes, KEY)
+    rx_bytes = decompress_file(rx_bytes)
+
+    output_dir = "/Users/ryanli/Desktop/untitled folder"
+    os.makedirs(output_dir, exist_ok=True)
+    output_filename = f"rx_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    output_path = os.path.join(output_dir, output_filename)
+    bytes_to_file(rx_bytes, output_path)
+
+    original = file_to_bytes(args.file_path)
+    print(f"[test] Match: {rx_bytes == original}")
+    print(f"[test] Saved to: {output_path}")
+else:
+    tx.transmit(tx_symbols)
