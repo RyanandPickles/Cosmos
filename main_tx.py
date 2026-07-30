@@ -31,7 +31,7 @@ args = parser.parse_args()
 # ---------------------------------------------------------------
 # Setup.
 # ---------------------------------------------------------------
-if not Test:
+if not test:
     sdr_tx = adi.Pluto("usb:1.1.5")
     tx = PlutoTransmitter()
     tx.set_sdr(sdr_tx)
