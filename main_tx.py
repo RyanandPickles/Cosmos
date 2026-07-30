@@ -97,4 +97,4 @@ if test:
     print(f"[test] Saved to: {output_path}")
 else:
     tx.transmit(tx_symbols)
-    time.sleep(0.3)
+    time.sleep(30)
