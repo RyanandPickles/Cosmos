@@ -25,9 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "file_path",
     nargs="?",
-    default="/Users/ryanli/Desktop/Test.txt",
-    help="Path of the file to encrypt and transmit (defaults to the test file).",
-)
+    default="/Users/ryanli/Desktop/Test.txt")
 args = parser.parse_args()
 
 # ---------------------------------------------------------------
