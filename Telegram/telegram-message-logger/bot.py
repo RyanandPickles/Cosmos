@@ -264,10 +264,40 @@ class TimedLogWriter:
         self.queue.put_nowait(None)
 
 
+class PerMessageLogWriter:
+    """Writes each incoming message to its own .log file immediately."""
+
+    def __init__(self, directory: Path) -> None:
+        self.directory = directory
+        self._callback_tasks: set[asyncio.Task[None]] = set()
+
+    def _dispatch_callback(self, path: Path) -> None:
+        async def run_callback() -> None:
+            try:
+                await asyncio.to_thread(process_log_file, path)
+            except Exception:
+                LOGGER.exception("Post-processing failed for %s", path)
+
+        task = asyncio.create_task(run_callback())
+        self._callback_tasks.add(task)
+        task.add_done_callback(self._callback_tasks.discard)
+
+    async def put(self, entry: LogEntry) -> None:
+        self.directory.mkdir(parents=True, exist_ok=True)
+        stamp = file_timestamp(entry.captured_at)
+        path = self.directory / f"messages_{stamp}.log"
+        path.write_text(entry.text, encoding="utf-8")
+        LOGGER.info("Wrote %s", path)
+        self._dispatch_callback(path)
+
+    async def stop(self) -> None:
+        if self._callback_tasks:
+            await asyncio.gather(*self._callback_tasks, return_exceptions=True)
+
+
 async def run() -> None:
     config = load_config()
-    writer = TimedLogWriter(config.log_directory, config.rotation_seconds)
-    writer_task = asyncio.create_task(writer.run())
+    writer = PerMessageLogWriter(config.log_directory)
 
     client = TelegramClient(
         str(config.session_path),
@@ -294,7 +324,6 @@ async def run() -> None:
         await client.run_until_disconnected()
     finally:
         await writer.stop()
-        await writer_task
         await client.disconnect()
 
 
