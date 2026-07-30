@@ -456,7 +456,7 @@ class PlutoReceiver:
         symbols = self.symbol_synchronization(rx_signal,interp=8,debug=False)
         symbols = self.frame_synchronization(symbols,debug=False)
         self.parse_frame(symbols) # to populate STF, LTF
-        symbols = self.frequency_synchronization(symbols,debug=True)
+        symbols = self.frequency_synchronization(symbols,debug=False)
         self.parse_frame(symbols) # to populate pilots, data
         symbols = self.channel_equalization(self.rx_data_symbols,debug=False)
         # symbols = self.unshuffle(symbols)
