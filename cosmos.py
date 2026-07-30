@@ -454,7 +454,7 @@ class PlutoReceiver:
         rx_signal -= np.mean(rx_signal) # remove DC component from RX signal
         rx_signal = self.matched_filter(rx_signal)
         symbols = self.symbol_synchronization(rx_signal,interp=8,debug=False)
-        symbols = self.frame_synchronization(symbols,debug=False)
+        symbols = self.frame_synchronization(symbols,debug=True)
         self.parse_frame(symbols) # to populate STF, LTF
         symbols = self.frequency_synchronization(symbols,debug=False)
         self.parse_frame(symbols) # to populate pilots, data
