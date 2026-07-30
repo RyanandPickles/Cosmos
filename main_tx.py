@@ -21,7 +21,7 @@ dir_plots = 'plots/'
 # ---------------------------------------------------------------
 # Args.
 # ---------------------------------------------------------------
-parser = argparse.ArgumentParser(description="Encrypt + transmit a file over the Pluto SDR link.")
+parser = argparse.ArgumentParser()
 parser.add_argument(
     "file_path",
     nargs="?",
