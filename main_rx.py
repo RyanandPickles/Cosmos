@@ -20,7 +20,7 @@ from helpers import bits_to_bytes, decompress_file, decrypt_file
 # ---------------------------------------------------------------------------
 
 #Change only this number to control the length of each completed log, in sec
-ROTATION_SECONDS = 3600
+ROTATION_SECONDS = 60
 OUTPUT_DIR = Path("/Users/vincent/Desktop/SDRReceivedLogs")
 PLUTO_URI = "usb:1.1.5"
 CHANNEL = 7
