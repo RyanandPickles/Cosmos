@@ -38,7 +38,7 @@ if not test:
     tx = PlutoTransmitter()
     tx.set_sdr(sdr_tx)
     tx.set_channel(7)
-    tx.set_power_level(90)
+    tx.set_power_level(70)
 
 # ---------------------------------------------------------------
 # Generate symbols from file data.
@@ -97,3 +97,4 @@ if test:
     print(f"[test] Saved to: {output_path}")
 else:
     tx.transmit(tx_symbols)
+    time.sleep(0.3)
