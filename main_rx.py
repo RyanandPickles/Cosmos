@@ -5,18 +5,16 @@ import os
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
+import matplotlib.pyplot as plt
 import adi
 import numpy as np
-import matplotlib.pyplot as plt
-
 from cryptography.fernet import InvalidToken
 
 from cosmos import PlutoReceiver
 from digicomm import qam_symbols_to_bits
 from helpers import bits_to_bytes, decompress_file, decrypt_file
 
-
+import traceback
 # ---------------------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------------------
@@ -27,7 +25,7 @@ OUTPUT_DIR = Path("/Users/vincent/Desktop/SDRReceivedLogs")
 #Change the PLUTO URI everytime u use it
 PLUTO_URI = "usb:1.1.5"
 CHANNEL = 7
-GAIN_LEVEL = 90
+GAIN_LEVEL = 95
 RX_BUFFER_SIZE = int(1e6)
 
 
@@ -229,17 +227,14 @@ def main() -> None:
             try:
                 rx_symbols = rx.receive()
                 plt.figure(figsize=(6, 6))
-                plt.scatter(np.real(rx_symbols), np.imag(rx_symbols), color='red', s=1, label='Received QAM Symbols')
+                plt.scatter(np.real(rx_symbols),np.imag(rx_symbols), color='red', label='Received QAM Symbols')
                 plt.title('Data Symbols After Equalization')
                 plt.xlabel('Real Component')
                 plt.ylabel('Imaginary Component')
                 plt.grid(True)
                 plt.legend()
-                plt.savefig("constellation.png", dpi=100)  
-                plt.close()                                  
-                print("[debug] Saved constellation.png")
+                plt.close()
                 rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
-
 
                 # Make sure the 32-bit header exists.
                 if len(rx_bits) < HEADER_BITS:
@@ -272,8 +267,9 @@ def main() -> None:
 
             except (InvalidToken, ValueError) as error:
                 print(f"Decode failed: {error}")
-            except Exception as error:
-                print(f"Receive failed: {error}")
+            except Exception:
+                traceback.print_exc()
+                break
     except KeyboardInterrupt:
         print("\nStopping receiver...")
 
