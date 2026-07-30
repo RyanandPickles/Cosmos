@@ -53,8 +53,8 @@ KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
 
 
 print(f"Reading file to transmit: {args.file_path}")
-filebytes = file_to_bytes(args.file_path)
-filebytes = compress_file(filebytes)
+#filebytes = file_to_bytes(args.file_path)
+#filebytes = compress_file(filebytes)
 filebytes = encrypt_file(filebytes, KEY)
 
 
