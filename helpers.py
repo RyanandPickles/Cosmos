@@ -96,3 +96,103 @@ def compress_file(info: bytes) -> bytes:
 
 def decompress_file(info: bytes) -> bytes:
     return zlib.decompress(info)
+
+try:
+    from pyldpc import make_ldpc, decode as _pyldpc_decode, get_message as _pyldpc_get_msg
+    _LDPC_AVAILABLE = True
+except ImportError:
+    _LDPC_AVAILABLE = False
+
+# These constants must be identical on TX and RX.
+# n=504, d_v=3, d_c=6  →  rate = 1 - d_v/d_c = 0.5
+# n·d_v / d_c = 252  (integer ✓)  →  k = n - 252 = 252 info bits per block
+_LDPC_N    = 504
+_LDPC_D_V  = 3
+_LDPC_D_C  = 6
+_LDPC_SEED = 42
+
+_ldpc_H = None
+_ldpc_G = None
+_ldpc_k = None   # info bits per block (252 with the params above)
+
+
+def _init_ldpc() -> None:
+    """Build LDPC matrices once and cache them. ~1-2 s first call."""
+    global _ldpc_H, _ldpc_G, _ldpc_k
+    if not _LDPC_AVAILABLE:
+        raise ImportError("Run:  pip install pyldpc")
+    print("Initialising LDPC matrices (one-time) …")
+    _ldpc_H, _ldpc_G = make_ldpc(
+        _LDPC_N, _LDPC_D_V, _LDPC_D_C,
+        systematic=True, sparse=False, seed=_LDPC_SEED,
+    )
+    _ldpc_k = int(_ldpc_G.shape[1])   # 252
+    print(f"LDPC ready: n={_LDPC_N}, k={_ldpc_k}, rate={_ldpc_k/_LDPC_N:.2f}")
+
+
+def ldpc_encode(bits: np.ndarray) -> np.ndarray:
+    """
+    Rate-1/2 block-LDPC encode.
+
+    Input : flat binary array (any length)
+    Output: coded bits — roughly 2× longer.
+    Pads input to the next multiple of k before encoding.
+    """
+    if _ldpc_G is None:
+        _init_ldpc()
+
+    G, k, n = _ldpc_G, _ldpc_k, _LDPC_N
+
+    # Pad to a multiple of k
+    pad = (-len(bits)) % k
+    bits_padded = np.concatenate([bits.astype(int), np.zeros(pad, dtype=int)])
+    n_blocks = len(bits_padded) // k
+
+    coded = np.empty(n_blocks * n, dtype=int)
+    for i in range(n_blocks):
+        v = bits_padded[i*k : (i+1)*k]
+        coded[i*n : (i+1)*n] = G.dot(v) % 2   # GF(2) systematic encoding
+
+    return coded
+
+
+def ldpc_decode(coded_bits: np.ndarray, snr_db: float = 5.0,
+                maxiter: int = 100) -> np.ndarray:
+    """
+    Belief-propagation LDPC decode from hard QAM decisions.
+
+    coded_bits : hard 0/1 bits straight from qam_symbols_to_bits()
+    snr_db     : assumed channel SNR fed to BP channel-reliability init.
+                 Tune this if you see excess errors: try 3–8 dB.
+    maxiter    : BP iterations per block (higher = better, slower).
+    """
+    if _ldpc_H is None:
+        _init_ldpc()
+
+    H, G, k, n = _ldpc_H, _ldpc_G, _ldpc_k, _LDPC_N
+    n_blocks = len(coded_bits) // n
+
+    decoded = np.empty(n_blocks * k, dtype=int)
+    for i in range(n_blocks):
+        block = coded_bits[i*n : (i+1)*n].astype(float)
+        # Hard bits → soft BPSK values:  0 → +1,  1 → −1
+        bpsk = 1.0 - 2.0 * block
+        d = _pyldpc_decode(H, bpsk, snr_db, maxiter=maxiter)
+        decoded[i*k : (i+1)*k] = _pyldpc_get_msg(G, d)
+
+    return decoded
+
+
+def ldpc_coded_symbol_count(n_info_bits: int, bits_per_symbol: int) -> int:
+    """
+    How many QAM symbols the LDPC-coded payload occupies.
+    Call this once at startup to set num_transmit_symbols on the RX.
+
+    With n=504, k=252, and 8000 info bits:
+      ceil(8000/252) = 32 blocks × 504 = 16 128 coded bits
+      16 128 / 4 bits/sym = 4 032 QAM-16 symbols   (vs 2 000 without LDPC)
+    """
+    if _ldpc_k is None:
+        _init_ldpc()
+    n_blocks = -(-n_info_bits // _ldpc_k)   # ceiling division
+    return -(-( n_blocks * _LDPC_N) // bits_per_symbol)
