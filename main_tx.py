@@ -14,7 +14,7 @@ from helpers import *
 
 import adi
 
-test=True
+test=False
 
 
 # Directory for saving plots
