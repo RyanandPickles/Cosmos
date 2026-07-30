@@ -45,9 +45,17 @@ def main() -> None:
     window_start = time.monotonic()
     window_messages = []
     last_message = None
-
     try:
         while True:
+            if time.monotonic() - window_start >= ROTATION_SECONDS:
+                if window_messages:
+                    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+                    output_path = OUTPUT_DIR / f"rx_{timestamp}.log"
+                    output_path.write_bytes(b"\n".join(window_messages))
+                    print(f"Saved {len(window_messages)} messages to {output_path}")
+                window_messages = []
+                window_start = time.monotonic()
+
             try:
                 rx_symbols = rx.receive()
                 rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
@@ -100,15 +108,6 @@ def main() -> None:
                 plt.legend()
                 plt.savefig("constellation.png", dpi=100)
                 plt.close()
-
-                if time.monotonic() - window_start >= ROTATION_SECONDS:
-                    if window_messages:
-                        timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
-                        output_path = OUTPUT_DIR / f"rx_{timestamp}.log"
-                        output_path.write_bytes(b"\n".join(window_messages))
-                        print(f"Saved {len(window_messages)} messages to {output_path}")
-                    window_messages = []
-                    window_start = time.monotonic()
 
             except Exception:
                 traceback.print_exc()
