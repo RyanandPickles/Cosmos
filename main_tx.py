@@ -12,7 +12,7 @@ from helpers import *
 
 import adi
 
-test=False
+test=True
 
 
 # Directory for saving plots
