@@ -75,4 +75,3 @@ print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # Transmit.
 # ---------------------------------------------------------------
 tx.transmit(tx_symbols)
-time.sleep(50)
