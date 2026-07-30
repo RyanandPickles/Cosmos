@@ -7,12 +7,6 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 MAIN_TX = BASE_DIR.parent.parent / "main_tx.py"
-
-# main_tx.py needs numpy/adi/cryptography/scipy/matplotlib, which live in
-# whatever environment you normally run it with (plain "python main_tx.py").
-# sys.executable here would instead resolve to the interpreter running
-# transfer.py/watcher.py (the logger's own venv), which doesn't have those
-# packages -- so we call out to "python" explicitly instead.
 COSMOS_PYTHON = "python"
 
 

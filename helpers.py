@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import random
+import zlib
 
+from cryptography.fernet import Fernet
 def get_random_integers(n, m, seed):
     """
     Generates n random integers between 0 and m-1 
@@ -80,3 +82,17 @@ def bits_to_bytes(bits):
 def bytes_to_file(byte_data, output_file_path):
     with open(output_file_path, "wb") as file:
         file.write(byte_data)
+
+def encrypt_file(info, key):
+    fernet = Fernet(key)
+    return fernet.encrypt(info)
+
+def decrypt_file(encrypted_info, key):
+    fernet = Fernet(key)
+    return fernet.decrypt(encrypted_info)
+
+def compress_file(info: bytes) -> bytes:
+    return zlib.compress(info, level=9)
+
+def decompress_file(info: bytes) -> bytes:
+    return zlib.decompress(info)

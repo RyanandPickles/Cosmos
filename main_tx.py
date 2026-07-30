@@ -4,12 +4,11 @@ import scipy.signal as signal
 import time 
 import sys
 import argparse
-
 from cryptography.fernet import Fernet
 
 from cosmos import *
 from digicomm import *
-from helpers import file_to_bytes, bytes_to_bits
+from helpers import *
 
 import adi
 
@@ -36,7 +35,7 @@ sdr_tx = adi.Pluto("usb:1.1.5")
 tx = PlutoTransmitter()
 tx.set_sdr(sdr_tx)
 tx.set_channel(7)
-tx.set_power_level(75)
+tx.set_power_level(90)
 
 # ---------------------------------------------------------------
 # Generate symbols from file data.
@@ -48,14 +47,15 @@ header_bits = 32
 max_bits = 19968
 
 KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
-fernet = Fernet(KEY)
 
 
 print(f"Reading file to transmit: {args.file_path}")
 filebytes = file_to_bytes(args.file_path)
-encrypted_bytes = fernet.encrypt(filebytes)
+filebytes = compress_file(filebytes)
+filebytes = encrypt_file(filebytes, KEY)
 
-filebits = bytes_to_bits(encrypted_bytes)
+
+filebits = bytes_to_bits(filebytes)
 if len(filebits) > max_bits:
     raise ValueError("file too big bud")
 
@@ -75,4 +75,4 @@ print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
 # Transmit.
 # ---------------------------------------------------------------
 tx.transmit(tx_symbols)
-time.sleep(5)
+time.sleep(50)

@@ -10,7 +10,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from cosmos import *
 from digicomm import *
-from helpers import bits_to_bytes, bytes_to_file
+from helpers import *
 
 import adi
 
@@ -45,6 +45,15 @@ constellation = get_qam_constellation(M, Es=1)
 # ---------------------------------------------------------------
 rx_symbols = rx.receive()
 
+plt.figure(figsize=(6, 6))
+plt.scatter(np.real(rx_symbols), np.imag(rx_symbols), color='red', label='Received QAM Symbols')
+plt.title('Data Symbols After Equalization')
+plt.xlabel('Real Component')
+plt.ylabel('Imaginary Component')
+plt.grid(True)
+plt.legend()
+plt.show()
+
 rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
 
 header_bit_values = rx_bits[:header_bits]
@@ -53,11 +62,12 @@ message_len = int(header_string, 2)
 
 message_bits = rx_bits[header_bits: header_bits + message_len]
 
-rx_bytes = bits_to_bytes(message_bits)
-
 KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
-fernet = Fernet(KEY)
-rx_bytes = fernet.decrypt(rx_bytes)
+
+rx_bytes = bits_to_bytes(message_bits)
+rx_bytes = decrypt_file(rx_bytes, KEY)
+rx_bytes = decompress_file(rx_bytes)
+
 
 output_dir = "/Users/vincent/Desktop/SDRReceivedLogs"
 os.makedirs(output_dir, exist_ok=True)
