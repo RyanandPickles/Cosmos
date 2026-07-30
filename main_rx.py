@@ -233,7 +233,9 @@ def main() -> None:
                 plt.ylabel('Imaginary Component')
                 plt.grid(True)
                 plt.legend()
+                plt.savefig("constellation.png", dpi=100)  # ← this line is missing
                 plt.close()
+                print("[debug] Saved constellation.png")
                 rx_bits = qam_symbols_to_bits(rx_symbols, M, 0)
 
                 # Make sure the 32-bit header exists.
