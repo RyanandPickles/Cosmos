@@ -17,7 +17,7 @@ OUTPUT_DIR = Path("/Users/vincent/Desktop/SDRReceivedLogs")
 PLUTO_URI = "usb:0.1.5"
 CHANNEL = 7
 GAIN_LEVEL = 80
-RX_BUFFER_SIZE = int(600e3)
+RX_BUFFER_SIZE = int(200e3)
 ROTATION_SECONDS = 60
 
 M = 16
