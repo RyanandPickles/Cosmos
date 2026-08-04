@@ -1,100 +1,55 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy.signal as signal
-import time 
-import sys
-import argparse
-import os
+import time
 from datetime import datetime
-from cryptography.fernet import Fernet
 
-from cosmos import *
-from digicomm import *
-from helpers import *
+from cosmos import PlutoTransmitter
+from digicomm import bits_to_qam_symbols
+from helpers import file_to_bytes, bytes_to_bits, compress_file, encrypt_file
 
-import adi
+M = 16
+HEADER_BITS = 32
+MAX_BITS = 7968
+KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
 
-test=False
+
+def transmit_file(file_path, tx, sleep_seconds=1):
+    print(f"Transmitting: {file_path}")
+    filebytes = file_to_bytes(file_path)
+    filebytes = compress_file(filebytes)
+    filebytes = encrypt_file(filebytes, KEY)
+
+    filebits = bytes_to_bits(filebytes)
+    if len(filebits) > MAX_BITS:
+        raise ValueError("file too big bud")
+
+    message_len = len(filebits)
+    binary_message_len = format(message_len, f'0{HEADER_BITS}b')
+    header_bit_values = np.array([int(d) for d in binary_message_len])
+    pad_bits = np.random.randint(0, 2, MAX_BITS - message_len)
+    all_bits = np.concatenate((header_bit_values, filebits, pad_bits))
+
+    tx_symbols, remainder = bits_to_qam_symbols(all_bits, M)
+    print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
+
+    tx.stop_transmission()
+    tx.transmit(tx_symbols)
+    time.sleep(sleep_seconds)
+    print("Done transmitting.")
 
 
-# Directory for saving plots
-dir_plots = 'plots/'
+if __name__ == "__main__":
+    import argparse
+    import adi
 
-# ---------------------------------------------------------------
-# Args.
-# ---------------------------------------------------------------
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "file_path",
-    nargs="?",
-    default="/Users/ryanli/Desktop/Test.txt")
-args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file_path", nargs="?", default="/Users/ryanli/Desktop/Test.txt")
+    parser.add_argument("--uri", default="usb:1.1.5")
+    args = parser.parse_args()
 
-# ---------------------------------------------------------------
-# Setup.
-# ---------------------------------------------------------------
-if not test:
-    sdr_tx = adi.Pluto("usb:1.1.5")
+    sdr_tx = adi.Pluto(args.uri)
     tx = PlutoTransmitter()
     tx.set_sdr(sdr_tx)
     tx.set_channel(7)
     tx.set_power_level(70)
 
-# ---------------------------------------------------------------
-# Generate symbols from file data.
-# ---------------------------------------------------------------
-
-M = 16
-k = int(np.log2(M))
-header_bits = 32
-max_bits = 7968
-
-KEY = b"PatTEws1o7HD5TpT-9IowWCdhxXvOKFXsQJxoAWf_lQ="
-
-
-print(f"Reading file to transmit: {args.file_path}")
-filebytes = file_to_bytes(args.file_path)
-filebytes = compress_file(filebytes)
-filebytes = encrypt_file(filebytes, KEY)
-
-
-filebits = bytes_to_bits(filebytes)
-if len(filebits) > max_bits:
-    raise ValueError("file too big bud")
-
-message_len = len(filebits)
-binary_message_len = format(message_len, f'0{header_bits}b')
-header_bit_list = [int(digit) for digit in binary_message_len]
-header_bit_values = np.array(header_bit_list)
-padding_zeros = max_bits - message_len
-pad_bits = np.random.randint(0, 2, padding_zeros)
-padded_filebits = np.concatenate((filebits, pad_bits))
-all_bits = np.concatenate((header_bit_values, padded_filebits))
-
-tx_symbols, remainder = bits_to_qam_symbols(all_bits, M)
-constellation = get_qam_constellation(M, Es=1)
-print(f"num_transmit_symbols = {len(tx_symbols)}, remainder = {remainder}")
-# ---------------------------------------------------------------
-# Transmit.
-# ---------------------------------------------------------------
-if test:
-    rx_bits = qam_symbols_to_bits(tx_symbols, M, remainder)
-    header_string = "".join(str(b) for b in rx_bits[:header_bits])
-    message_len = int(header_string, 2)
-    message_bits = rx_bits[header_bits: header_bits + message_len]
-    rx_bytes = bits_to_bytes(message_bits)
-    rx_bytes = decrypt_file(rx_bytes, KEY)
-    rx_bytes = decompress_file(rx_bytes)
-
-    output_dir = "/Users/ryanli/Desktop/untitled folder"
-    os.makedirs(output_dir, exist_ok=True)
-    output_filename = f"rx_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-    output_path = os.path.join(output_dir, output_filename)
-    bytes_to_file(rx_bytes, output_path)
-
-    original = file_to_bytes(args.file_path)
-    print(f"[test] Match: {rx_bytes == original}")
-    print(f"[test] Saved to: {output_path}")
-else:
-    tx.transmit(tx_symbols)
-    time.sleep(30)
+    transmit_file(args.file_path, tx)
